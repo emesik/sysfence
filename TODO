@@ -1,0 +1,19 @@
+
+    !   this is a major bug and/or lack of functionality and should be fixed
+        ASAP.
+    +   this is potentially useful enchancement.
+    -   minor improvement.
+
+
+ So, current TODO is:
+
+    !   stopped 'sfwatch' should exit after SIGTERM
+
+    !   uid list requires whitespace after separator
+
+    !   better handling of statfs() errors
+
+    +   ports to other systems
+        . *BSD - AFAIK, these support proc fs, so it looks easy
+        . uther unices (looking for info & help)
+

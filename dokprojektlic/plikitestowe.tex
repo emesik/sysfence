@@ -1,0 +1,59 @@
+\section{Pliki testowe}
+
+\label{pliki}
+
+\textbf{test1.conf}
+
+{\scriptsize \begin{verbatim}
+if "regula1" {
+   la1 >= 5.0 and
+   {
+       { la5 > 3.0 and la5 < 5.0 }
+       or
+       { la15 > 2.0 and la15 < 5.0 }
+   }
+} run 'echo "regula1"'
+
+if "regula2" {
+   nproc >= 20
+} run 'echo "regula2"'
+
+if "regula3" {
+   nproc "http" >= 10 and la15 > 2.0
+} run 'echo "regula3"'
+
+if "regula4" {
+   freespace "/var" < 100M
+} run 'echo "regula4"'
+
+if "regula5" {
+   freemem < 128M
+   or
+   swapused > 256M
+} run 'echo "regula4"'
+\end{verbatim} }
+
+\textbf{test2.conf}
+
+{\scriptsize \begin{verbatim}
+if "regula1" {
+   la1 >= 0.1
+} run 'echo "regula1"'
+
+if "regula2" {
+   la1 >= 0.1
+} run 'echo "regula2"'
+
+if "regula3" {
+   la1 >= 0.1
+} run 'echo "regula3"'
+
+\end{verbatim} }
+
+\textbf{test3.conf}
+
+{\scriptsize \begin{verbatim}
+if "regula1" {
+   la1 >= 0.1
+} run 'mozilla'
+\end{verbatim} }

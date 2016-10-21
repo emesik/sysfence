@@ -1,0 +1,43 @@
+%------------------------------------------------------------------------------
+\documentclass[12pt,twoside,a4paper]{mwart}
+\pagestyle{headings}
+\usepackage[polish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[latin2]{inputenc}
+\usepackage[dvips]{graphicx}
+\usepackage{subfigure}
+\begin{document}
+\sloppy
+
+% title page
+\input{titlepage}
+
+% abstract
+\input{abstract}
+
+\newpage
+
+% table of contents
+\tableofcontents
+
+\newpage
+
+% tu dodawac rozdzialy:
+\include{wstep}
+\include{specuzytkownika}
+\include{wymagania}
+\include{speckonstrukcyjna}
+\include{testowanie}
+
+% appendix
+\appendix
+%\input{tabele}
+\include{gramatyka}
+\include{plikitestowe}
+\include{autorzy}
+
+% bibliography
+%\input{bibliography}
+
+
+\end{document}

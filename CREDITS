@@ -1,0 +1,23 @@
+
+ Author:
+
+    Michal Salaban <emes /at/ pld-linux.org>
+    Mirek Kopertowski <m.kopertowski /at/ post.pl>
+
+ Contributors:
+    
+    Juha Ulkoniemi <julkonie /at/ mail.student.oulu.fi>
+        - cleaned up the code, reduced gcc warnings, wrote new Makefile
+
+    Paul Stynen <mammooth /at/ scarlet.be>:
+        - made a patch for non-vanilla kernels
+        """
+        I tried to use sysfence 1.5 on SuSe 9.3 but the memory data
+        was not correct. I figured out this was due to the fact that
+        the 2 summary lines in /proc/meminfo were not there (I don't
+        know if that is typical for SuSe or for kernel 2.6). I
+        patched the code so that now it looks for the keywords
+        MemTotal, Buffers, Cached etc. The keywords can be in any
+        order and they are there for Redhat 8.0 (2.4 kernel) and
+        Suse 9.3 (2.6 kernel).
+        """

@@ -1,0 +1,88 @@
+\section{Testowanie}
+
+W celu u³atwienia uruchomienia i testowania aplikacji wprowadzili¶my
+dodatkow± opcjê kompilacji. Polecenie \texttt{make debug} 
+kompiluje program z dodatkowymi informacjami dla programu debuguj±cego,
+a program podczas dzia³ania zapisuje w dzienniku systemowym dodatkowe
+informacje.
+
+Testowanie aplikacji zosta³o przeprowadzone na stacjach roboczych
+wyposa¿onych w systey operacyjne Linux RedHat w wersji 9.0 oraz PLD Linux
+w wersji 2.0. Obci±¿enie systemu by³o symulowane za pomoc± innych aplikacji
+(programu archiwizuj±cego dane, programu odtwarzaj±cego film itp.). Testowe
+pliki konfiguracyjne zamieszczamy w za³±czniku~\ref{pliki}.
+
+Testowanie aplikacji podzielili¶my na $4$ g³ówne etapy:
+\begin{enumerate}
+    \item \textbf{testowanie czytania plików konfiguracyjnych i tworzenia regu³}
+        \begin{itemize} 
+            \item
+     program podczas debugowania wypisuje na standardowe wyj¶cie ilo¶æ wczytanych
+     regu³ oraz ich interpretacjê; testowanie polega³o na porównaniu tych danych 
+     z informacjami zawartymi w plikach konfiguracyjnych (plik testowy: test1.conf); 
+        \end{itemize}
+
+    \item \textbf{testowanie monitorowania regu³ i podejmowania akcji}
+        \begin{itemize}
+            \item
+     proces \texttt{sffetch} po pobraniu danych z systemu wypisuje je; 
+     dane porównywali¶my z danym dostarczanymi przez programy \texttt{top};                   
+            \item        
+    ka¿dy z procesów \texttt{sfwatch} po sprawdzeniu warunku wypisuje informacje
+    czy zosta³ on spe³niony i czy akcja zosta³a wykonana; na podstawie
+    tych danych okre¶lali¶my czy wyra¿enie zosta³o dobrze zinterpretowane;
+    regu³y testowe zosta³y tak dobrane aby przetestowaæ wszystkie rodzaje monitorowanych zasobów
+    (plik testowy: test1.conf);
+        \end{itemize}
+    
+    \item \textbf{testowanie komunikacji IPC}
+        \begin{itemize}
+            \item 
+    po wydaniu polecenia \texttt{ipcs -sm} dostêpne s± informacje o liczbie
+    procesów korzystaj±cych z pamiêci dzielonej (prawid³owa warto¶æ to
+    liczba procesów aplikacji) i liczbie przydzielonych
+    semaforów (prawid³owa warto¶æ to $1$); 
+            \item
+    proces czekaj±cy na podniesienie semafora wypisuje o tym informacjê; analiza
+    tych informacji pozwala³a oceniæ czy sekcja krytyczna programu wykonywana
+    jest w danej chwili tylko przez jeden proces;
+            \item
+    testem poprawnego dzia³ania pamiêci dzielonej by³a ogólna poprawno¶æ dzia³ania
+    programu; gdyby bowiem informacje odczytywane z pamiêci dzielonej nie by³y
+    prawid³owe dzia³anie programu by³oby zupe³nie przypadkowe;                          
+        \end{itemize}
+    
+    \item \textbf{testowanie obs³ugi sygna³ów i zmiany nazw procesów} 
+    
+        \begin{itemize}
+            \item
+    program uruchomili¶my z zestawem regu³, które by³y zawsze spe³nione;
+    akcja ka¿dej regu³y polega³a na wypisaniu krótkiej informacji na
+    standardowym wyj¶ciu; wysy³aj±c sygna³y \texttt{SIGUSR1} i 
+    \texttt{SIGCONT} obserwowali¶my: informacje zwracane przez program \texttt{ps}
+    (w~szczególno¶ci nazwy procesów)
+     oraz czy wznowione procesy dzia³aj± poprawnie (plik testowy: test2.conf);
+            \item
+    do procesów \texttt{sfwatch} wysy³ali¶my sygna³ \texttt{SIGTERM} koñcz±cy
+    ich dzia³anie; obserwowali¶my czy nie wp³ywa to na pracê pozosta³ych procesów
+    oraz czy liczba  procesów korzystaj±cych z pamiêci dzielonej siê zmniejszy³a
+    (polecenie \texttt{ipcs -sm});
+            \item
+    do procesu \texttt{sffetch} wysy³ali¶my sygna³ \texttt{SIGTERM} koñcz±cy
+    dzia³anie programu; obserwowali¶my czy koñczone s± wszystkie procesy i czy
+    zasoby IPC s± zwalniane (polecenie \texttt{ipcs -sm}).
+            \item
+    program uruchomili¶my z jedn± regu³± (plik testowy: test3.conf), która
+    uruchamia³a program \texttt{mozilla}; program ten trzeba zakoñczyæ aby regu³a
+    mog³a byæ nadal monitorowna; obserwowali¶my nazwê procesu (podczas wykonywania
+    polecenia jest do niej dodawane s³owo \texttt{EXEC}).         
+        \end{itemize}
+\end{enumerate}
+Wszystkie b³êdy znalezione podczas testowania zosta³y usuniête.
+
+\emph{Sysfence} by³ testowany tak¿e w normalnych warunkach pracy, na komputerze
+obs³uguj±cym bardzo du¿y serwis informacyjny. Baza danych MySQL dzia³aj±ca
+na s³abym sprzêcie i pod znacznym obci±¿eniem potrafi³a zu¿yæ wszelkie dostêpne
+zasoby, uniemo¿liwiaj±c zdalny dostêp do serwera. Dziêki zastosowaniu 
+\emph{sysfence} i wy³±czaniu przy jego pomocy serwera MySQL, wiele razy uda³o
+siê unikn±æ za³amania systemu.

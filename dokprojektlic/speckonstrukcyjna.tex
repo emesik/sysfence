@@ -1,0 +1,182 @@
+\section{Specyfikacja konstrukcyjna}
+
+Program zosta³ napisany w jêzyku C. Dokonuj±c wyboru jêzyka kierowali¶my
+siê przede wszystkim dostêpno¶ci± funkcji systemowych i mo¿liwo¶ciami
+optymalizacji programu. Z za³o¿enia program mia³ mo¿liwe ma³o obci±¿aæ
+system, by w razie potrzeby szybko podj±æ stosowne dzia³ania.
+Wy¿szy poziom optymalizacji kodu uzyskali¶my przy pomocy flagi
+\texttt{-O2} kompilatora.
+
+\subsection{Modu³y}
+W tablicy~\ref{tab:moduly} 
+%(strona \pageref{tab:moduly}) 
+zamieszczamy
+podzia³ aplikacji na modu³y i ich funkcje.
+
+\begin{table}[hp]
+\centering
+\caption{Podzia³ na modu³y}
+\begin{tabular}{|l|l|p{7cm}|} \hline \label{tab:moduly}
+\centering \textbf{Katalog} & \textbf{Nazwa modu³u} & \multicolumn{1}{p{7cm}|}{\centering \textbf{Funkcja}}\\ \hline
+/           & sysfence      & g³ówny modu³ aplikacji (zwiera funkcjê \textit{main}); wczytanie regu³ z plików konfiguracyjnych;
+                              inicjalizacja zasobów IPC (pamiêæ dzielona, semafor); utworzenie
+                              procesów potomnych\\ \cline{2-3}          
+            & mainloop      & zawiera dwie funkcje: \textit{rule\_watch\_loop} i \textit{res\_probe\_loop}
+                              s± to g³ówne funkcje procesów ¶ledz±cych regu³y i zasoby systemu;
+                              ka¿da z funkcji zwiera nieskoñczon± pêtlê\\ \cline{2-3}
+            & datastruct    & definicja struktur danych i podstawowych funkcji na nich
+                              operuj±cych\\ \cline{2-3}
+            & getstats      & funkcje pobieraj±ce z systemu informacje o zasobach\\ \cline{2-3}
+            & conditions    & funkcje sprawdzaj±ce warunki w regu³ach\\ \cline{2-3}
+            & cp2memory     & funkcje kopiuj±ce struktury danych (regu³y) do pamiêci dzielonej\\ \hline            
+parseopt/   & confread      & wczytanie regu³ z plików\\ \cline{2-3}
+            & lex           & przetwarza plik tekstowy z konfiguracj±
+                              na strukturê tokenów\\ \cline{2-3}
+            & parse         & tworzy regu³y\\ \cline{2-3}
+            & parseopt      & rozpoznaje i zapisuje sta³e tekstowe i numeryczne z pliku tekstowego\\ \hline
+sys/        & communiaction & obs³uga komunikacji IPC, funkcje do przydzielania/zwalniania
+                              pamiêci dzielonej i semaforów\\ \cline{2-3}
+            & sighandlers   & funkcje obs³ugi i blokowania sygna³ów\\ \cline{2-3}
+            & processtitle  & zmiana nazw procesów wy¶wietlanych przez \texttt{ps wux}\\ \cline{2-3}
+            & log           & logowanie danych\\ \cline{2-3}
+            & exit          & funkcja koñcz±c± wykonywanie procesu \textit{bail\_out}; definicja kodów 
+                              wyj¶ciowych\\ \cline{2-3}
+            & xalloc        & pomocnicza funkcja do alokacji pamiêci\\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Modu³ sighandlers}
+
+\begin{itemize}
+    \item \textit{void signal\_init (int process)} -- funkcja inicjuje obs³ugê sygna³ów
+        za pomoc± odpowiednich procedur. Parametr (\texttt{PARENT} dla
+        \textit{sffetch} lub \texttt{CHILD} dla \textit{stwatch})
+        pozwala zró¿nicowaæ dzia³anie funkcji dla ró¿nych procesów.
+    \item \textit{void signals\_handling (int onoff)} -- funkcja blokuje
+        (\texttt{SIGBLOCK}) lub odblokowuje (\texttt{SIGUNBLOCK}) przyjmowanie sygna³ów.
+        Wykorzystywana jest przed wej¶ciem programu do sekcji krytycznej (czyli operacji
+        na pamiêci dzielonej) i po wyj¶ciu z niej.
+\end{itemize}
+
+\subsubsection{Modu³ communication}
+
+\begin{itemize}
+    \item \textit{int semaphore\_init (int val)} -- inicjalizacja pojedynczego semafora.
+        Argument \texttt{SEMAPHORE\_SET} lub \texttt{SEMAPHORE\_RESET} decyduje o jego
+        pocz±tkowym stanie. Funkcja zwraca identyfikator semafora (\textit{semid}).
+    \item \textit{semaphore\_wait(int semid)} i \textit{semaphore\_post(int semid)}
+        -- makra do operacji na semaforze.
+    \item \textit{int semaphore\_del (int semid)} -- likwidacja semafora.
+    \item \textit{int shared\_mem\_init (int memsize)} -- inicjalizacja segmentu
+        pamiêci dzielonej o rozmiarze \textit{memsize}. Funkcja zwraca identyfikator
+        pamiêci (\textit{shmid}).
+    \item \textit{void *shared\_mem\_attach (int shmid)} -- przy³±czenie pamiêci
+        dzielonej o identyfikatorze \textit{shmid}. Funkcja zwraca wska¼nik do pocz±tku
+        pamiêci (\textit{shm}).
+    \item \textit{void shared\_mem\_detach (void *shm)} -- od³±czenie pamiêci dzielonej.
+    \item \textit{void shared\_mem\_del (int shmid)} -- usuniêcie segmentu pamiêci
+        dzielonej.
+\end{itemize}
+
+\subsubsection{Modu³ processtitle}
+
+Idea tego modu³u zaczerpniêta zosta³a z kodu ¼ród³owego programu \textit{sendmail}
+(dok³adnie z pliku sys/conf.c).
+
+\begin{itemize}
+    \item \textit{void initproctitle (int argc, char **argv)} -- funkcja kopiuje
+        obszar zajêty przez zmienne ¶rodowiskowe (\textit{environ}) w inne miejsce
+        pamiêci i zmienia wska¼nik \textit{environ} tak aby wskazywa³ na ten obszar.
+        Pamiêæ zajmowana przez oryginalny obraz zmiennych ¶rodowiskowych wykorzystywany
+        jest do zwiêkszenia bufora przeznaczonego na pamiêtanie nazwy procesu. Funkcja
+        wyznacza te¿ maksymaln± d³ugo¶æ nazwy procesu. Jest ona pamiêtana jest w globalnej
+        zmiennej modu³u.
+    \item \textit{void setproctitle (int process, int state, const char *rulename)} --
+        ustawia tytu³ procesu \textit{process} na \texttt{MAIN\_PROCESS} lub
+        \texttt{RULE\_PROCESS}. Dozwolone stany (\textit{state}) to \texttt{STATE\_STOPPED}, 
+        \texttt{STATE\_NORMAL} lub \texttt{STATE\_EXEC}. \textit{rulename} jest
+        wska¼nikiem na ³añcuch umieszczony w apostrofach.
+\end{itemize}
+
+\subsubsection{Modu³ xalloc}
+
+\begin{itemize}
+    \item \textit{void * xalloc (void * ptr, size\_t size)} -- pomocnicza funkcja do alokacji pamiêci,
+        je¶li wska¼nik \textit{ptr} ma warto¶æ ró¿n± od \texttt{NULL} obszar jest zwiêkszany. Je¶li wyst±pi³
+        b³±d podczac przydzielania pamiêci, funkcja koñczy dzia³anie programu z kodem \texttt{EXIT\_MEM}.
+\end{itemize}
+
+\subsubsection{Modu³ exit}
+
+\begin{itemize}
+    \item \textit{exit.h} -- zwiera definicjê kodów zakoñczenia programu: \texttt{EXIT\_OK},
+        \texttt{EXIT\_IO}, \texttt{EXIT\_MEM}, \texttt{EXIT\_NOCONF}, \texttt{EXIT\_NORULE}, 
+        \texttt{EXIT\_PARSE}, \texttt{EXIT\_VALUE}, \texttt{EXIT\_OPTION}, \texttt{EXIT\_SHM}, 
+        \texttt{EXIT\_SEM}, \texttt{EXIT\_BUG};
+    \item \textit{void bail\_out (int excode, const char *details)} -- koñczy dzia³anie
+        programu z odpowiednim kodem i komunikatem. \textit{details} jest dodatkow± informacj±
+        wypisywan± poprzez \textit{stderr}.
+\end{itemize}
+
+\subsubsection{Modu³ cp2memory}
+
+\begin{itemize}
+    \item \textit{void *cp\_list (void **buf, sf\_list *list)} i \textit{void *cp\_rule (void **buf, sf\_rule *rule)} --
+    przekopiowuj± odpowiednie drzewiaste struktury do ci±g³ego bufora.
+\end{itemize}
+
+\subsubsection{Modu³ conditions}
+
+\begin{itemize}
+    \item \textit{int check\_atomic (sf\_atomic *at)} -- sprawdza warto¶æ wyra¿enia atomicznego.
+    \item \textit{int check\_expression (sf\_expression *ex)} -- sprawdza warto¶æ z³o¿onego
+          wyra¿enia \textit{ex}.
+\end{itemize}
+
+\subsubsection{Modu³ mainloop}
+
+\begin{itemize}
+    \item \textit{void rule\_watch\_loop (sf\_rule *rule)} -- g³ówna pêtla procesu \textit{sfwatch}
+    w której cyklicznie sprawdzana jest logiczna warto¶æ regu³y.
+    \item \textit{void res\_probe\_loop (sf\_database *db)} -- g³ówna pêtla procesu \textit{sffetch},
+    w której z systemu pobierane s± wszelkie niezbêdne dane.
+\end{itemize}
+
+\subsubsection{Modu³ sysfence}
+
+Najwa¿niejsze funkcje wywo³ywane w pocz±tkowym okresie dzia³ania aplikacji to (wg. kolejno¶ci wywo³ywania):
+\begin{itemize}
+    \item \textit{read\_config\_files ()}; 
+    \item \textit{open\_files ()}; 
+    \item \textit{daemon ()}; 
+    \item \textit{semaphore\_init ()}; 
+    \item \textit{shared\_mem\_init ()}; 
+    \item \textit{shared\_mem\_attach ()}; 
+    \item \textit{cp\_rule ()}; 
+    \item \textit{fetch\_* ()}; 
+    \item \textit{fork ()}; 
+    \item \textit{signal\_init ()}; 
+    \item \textit{initproctitle ()}; 
+    \item \textit{rule\_*\_loop ()}; 
+\end{itemize}
+
+\subsection{Przep³yw danych}
+
+Po uruchomieniu programu dokonywana jest analiza leksykalna i sk³adniowa pliku
+konfiguracyjnego. Je¶li nie wyst±pi± w nim ¿adne b³êdy, dla ka¿dej regu³y tworzony
+jest nowy proces odpowiadaj±cy za jej monitorowanie. Ka¿demu z nich nadawana jest
+nazwa \emph{sfwatch}. Rodzic przyjmuje nazwê \emph{sffetch} i wchodzi w nieskoñczon±
+pêtlê, w której pobiera z systemu wszelkie niezbêdne dane i umieszcza je w pamiêci
+dzielonej. \emph{sffetch} ma tak¿e mo¿liwo¶æ kierowania prac± procesów potomnych za
+pomoc± sygna³ów (patrz strona \pageref{sygnaly}).
+
+Przep³yw danych zilustrowany jest na rycinie~1. 
+%(strona \pageref{ryc_przeplyw}).
+
+\begin{figure}[ht]
+    \label{ryc_przeplyw}
+    \centering
+    \includegraphics[scale=0.4]{przeplyw.eps}
+    \caption{Przep³yw danych}
+\end{figure}
+

@@ -1,0 +1,27 @@
+\section{Wymagania}
+
+Do³o¿yli¶my starañ, by mechanizmy obs³ugi procesów, sygna³ów i
+metod IPC (semafory i pamiêæ dzielona) korzysta³y ze standardowych funkcji
+dostêpnych w ka¿dym wspó³czesnym systemie uniksowym.
+
+Ponadto, dla prawid³owego dzia³ania, sysfence wymaga od systemu:
+\begin{itemize}
+    \item systemu plików \emph{proc} zamontowanego w katalogu \texttt{/proc}
+    (w przypadku u¿ycia innej ¶cie¿ki konieczna jest modyfikacja odpowiedniej
+    sta³ej przed kompilacj±),
+    \item funkcji systemowej \texttt{statfs()}
+    %
+    %
+    %   LSB opisuje statfs() jako 'deprecated'
+    %   jesli zdazymy, zamienmy je na statvfs(), zgodne z tym standardem
+    %
+    %
+\end{itemize}
+
+W chwili obecnej program jest przeznaczony dla systemu operacyjnego Linux.
+Poniewa¿ w trakcie tworzenia aplikacji nie dysponowali¶my maszynami
+dzia³aj±cymi pod innymi systemami, nie mogli¶my przetestowaæ kompilacji i
+zachowania aplikacji w innym ¶rodowisku. Powy¿sze wymagania nie s± jednak
+wygórowane i przewidujemy, ¿e sysfence bez problemów mo¿e zostaæ uruchomiony
+na innych darmowych platformach uniksowych, jak np. FreeBSD, OpenBSD, NetBSD
+czy Hurd.

@@ -1,0 +1,33 @@
+
+    sysfence
+    
+    (c) 2004, Michal Salaban <emes@pld-linux.org>
+
+
+  1. Where to find latest sysfence version?
+
+      Look at http://sysfence.sourceforge.net
+
+  2. What do I need to use sysfence?
+
+      Nothing special. A functional Linux box with proc filesystem mounted
+     in /proc directory. If you have it mounted somewhere else (very unusual)
+     please make changes to source files.
+
+  3. How to compile sysfence?
+
+        $ make
+
+     Then, install it by typing:
+
+        # make install
+
+     You may use options like DESTDIR and/or PREFIX, e.g.:
+
+        # make install PREFIX=/usr
+
+  4. How to use sysfence?
+
+      For some examples, see doc/example.conf or visit sysfence project
+     homepage.
+

@@ -1,0 +1,193 @@
+\section{Specyfikacja u¿ytkowa}
+
+\subsection{Kompilacja i uruchamianie programu}
+
+Kompilacja programu nastêpuje po wydaniu polecenia \texttt{make} w katalogu
+zawieraj±cym ¼ród³a. Nastêpnie przy pomocy polecenia \texttt{make install}
+mo¿na dokonaæ instalacji aplikacji w drzewie katalogów zgodnym ze
+specyfikacj± \emph{FHS}.
+
+Program uruchamiany jest poleceniem \texttt{sysfence} z 
+conajmniej jednym argumentem wskazuj±cym na plik konfiguracyjny.  
+W przypadku gdy pliki konfiguracyjne nie zawieraj± b³êdów sk³adniowych program
+przechodzi do pracy jako demon.
+
+\subsection{Komunikacja z programem}
+
+Po uruchomieniu programu dla ka¿dej regu³y tworzony jest proces potomny.
+Proces rodzicielski odpowiedzialny jest za zbieranie informacji z systemu. 
+Informacje te udostêpniane s± procesom potomnym za pomoc± mechanizmów IPC.
+
+Ka¿dy proces otrzymuje swoj± nazwê. W przypadku procesu rodzicielskiego jest
+to \texttt{sffetch}, a w przypadku procesów potomnych \texttt{sfwatch}.
+Nazwy procesów dostêpne s± np. po wykonaniu polecenia \texttt{ps wxu} w
+kolumnie \texttt{COMMAND}. Podstawowe nazwy wzbogacane s± o dodatkowe
+informacje:
+
+\begin{itemize}
+    \item \texttt{STOPPED} -- gdy proces zosta³ zatrzymany,
+    \item \texttt{EXEC} -- gdy proces potomny wykonuje polecenie pow³oki,
+    \item \texttt{'nazwa regu³y'} -- dla procesów potomnych.  
+\end{itemize}
+
+Informacje te umo¿liwiaj± okre¶lenie zadañ i stanów poszczególnych procesów.
+
+\label{sygnaly}
+Komunikacja z procesami odbywa siê za pomoc± sygna³ów. Przydatne sygna³y
+zamieszczone s± w tablicach~\ref{tab:sffetch} i~\ref{tab:sfwatch}. 
+%(strona \pageref{tab:sffetch}).
+Pos³uguj±c siê sygna³ami mo¿na tymczasowo wstrzymaæ sprawdzanie 
+ca³o¶ci lub pojedynczych regu³, a nastêpnie je wznowiæ bez konieczno¶ci 
+wprowadzania zmian do plików konfiguracyjnych.
+
+\begin{table}[ht]
+\centering
+\caption{Komunikacja z \texttt{sffetch}}
+\begin{tabular}{|c|p{8cm}|} \hline \label{tab:sffetch}
+\textbf{Sygna³} &  \multicolumn{1}{p{8cm}|}{\centering \textbf{Reakcja}} \\ \hline 
+\texttt{SIGUSR1} &  zatrzymuje proces \texttt{sffetch} i wszystkie 
+                    \texttt{sfwatch}\\ \hline
+\texttt{SIGCONT} &  wznawia wszystkie procesy\\ \hline
+\texttt{SIGTERM} &  poprawnie koñczy prace programu: wysy³a \texttt{SIGTERM} do wszystkich
+                    dzia³aj±cych procesów \texttt{sfwatch} oraz zwalnia wszystkie zasoby 
+                    (w szczególno¶ci IPC) \\ \hline
+\end{tabular}
+\end{table}
+
+%%
+
+\begin{table}[ht]
+\centering
+\caption{Komunikacja z \texttt{sffwatch}}
+\begin{tabular}{|c|p{8cm}|} \hline \label{tab:sfwatch}
+\textbf{Sygna³} &  \multicolumn{1}{p{8cm}|}{\centering \textbf{Reakcja}} \\ \hline 
+\texttt{SIGUSR1} &  zatrzymuje monitorowanie regu³y \\ \hline
+\texttt{SIGCONT} &  wznawia monitorowanie regu³y\\ \hline
+\texttt{SIGTERM} &  poprawnie koñczy monitorowanie regu³y, pozosta³e
+                    regu³y s± nadal monitorowane\\ \hline
+\end{tabular}
+\end{table}
+
+Nie zaleca siê wysy³ania sygna³ów \texttt{SIGSTOP} i \texttt{SIGKILL} gdy¿ mog±
+spowodowaæ zak³ócenia w pracy pozosta³ych procesów aplikacji. 
+
+\subsection{Konfiguracja}
+
+Konfiguracja programu wczytywana jest z plików.  Plik konfiguracyjny sk³ada
+siê z regu³. Ka¿da regu³a sk³ada siê z trzech czê¶ci: nazwy, warunku i akcji.
+Przyk³adowy plik z regu³ami dostêpny w \texttt{doc/example.conf}. Plik dodatkowo
+zawiera skrócony opis sk³adni jêzyka regu³. Orientacyjny opis gramatyki znajduje
+siê na stronie~\pageref{gramatyka}.
+
+Poni¿ej zamieszczamy kilka przyk³adowych regu³.
+
+{\footnotesize \begin{verbatim}
+if "something wrong" {
+    la15 > 4.0
+    and
+    {
+        swapfree < 64M
+        or
+        memfree < 128M
+    }
+} run 'echo "i wish you were here..." | sendsms +48ADMINCELLPHONE'
+
+rule "high load" { la1 > 3.0 and la15 > 2.0 } log
+
+when "memory low" {
+   freemem < 128M
+   or
+   swapused > 256M
+} invoke once 'echo "go buy some memory" | mail me@email.com'
+log once
+step 60
+\end{verbatim} }
+
+Nale¿y zwróciæ uwagê ¿e niektóre s³owa kluczowe posiadaj± zamienniki,
+np. zamiast \texttt{if} mo¿na u¿ywaæ \texttt{rule},\texttt{when} lub
+\texttt{on}; zamiast \texttt{run} -- \texttt{invoke} \texttt{exec}
+\texttt{execute}. S³owo \texttt{once} jest opcjonalne i modyfikuje
+podejmowanie akcji. Wykonywana jest on tylko za pierwszym razem gdy
+wyra¿enie przyje³o warto¶æ \texttt{TRUE}, dopiero przyjêcie przez
+wyra¿enie warto¶ci \texttt{FALSE} umo¿liwia ewentualne powtórne
+wykonanie akcji.  Komenda umieszczona po s³owie \texttt{run}
+przekazywana jest do \texttt{/bin/sh} tak wiêc mo¿e to byæ zwyk³e polecenie,
+program lub nawet skrypt. Sprawdzanie regu³y jest wstrzymane do chwili 
+zakoñczenia tej akcji.  
+
+Parametrami monitorowanymi w wersji 0.14 programu s±:
+\begin{itemize}
+    \item \textbf{la1} -- obci±¿enie systemu w ostatniej minucie,
+    \item \textbf{la5} -- obci±¿enie systemu w ci±gu ostatnich $5$ minut,
+    \item \textbf{la15} -- obci±¿enie systemu w ci±gu ostatnich $15$ minut,
+    \item \textbf{freemem} -- wolna pamiêæ RAM,
+    \item \textbf{usedswap} -- wykorzystana pamiêæ RAM,
+    \item \textbf{freeswap} -- wolna przestrzeñ wymiany (swap),
+    \item \textbf{usedswap} -- wykorzystana przesrzeñ wymiany,
+    \item \textbf{usedspace} -- zajêta przestrzeñ w systemie plików,
+    \item \textbf{freespace} -- ilo¶æ wolnego miejsca dla systemu plików,
+    \item \textbf{availspace} -- dostêpny obszar w systemie plików (ilo¶æ
+    wolnego miejsca po odjêciu przestrzeni zarezerwowanej dla superu¿ytkownika),
+    \item \textbf{nproc} -- liczba procesów (tak¿e z selekcj± wg. u¿ytkownika
+    bêd±cego w³a¶cicielem oraz stanu, w jakim znajduje siê proces)
+\end{itemize}
+
+\subsubsection{Obci±¿enie systemu}
+
+Obci±¿enie systemu okre¶lane jest przez warto¶æ zwan± \emph{load average} (w skrócie
+\emph{LA}).
+W uproszczeniu jest to ¶rednia liczba procesów czekaj±cych w kolejce do wykonania.
+Je¶li warto¶æ \emph{load average} przekracza liczbê procesorów u¿ywanych przez
+system, oznacza to ¿e maszyna jest przeci±¿ona. J±dro udostêpnia warto¶ci \emph{LA}
+z ostatniej minuty, piêciu oraz piêtnastu miut, dziêki czemu mo¿na sprawdziæ czy
+nadmierne obci±¿enie jest zjawiskiem chwilowym (co zdarza siê bardzo czêsto przy
+normalnej pracy) czy d³ugotrwa³ym.
+
+\subsubsection{Ilo¶æ pamiêci RAM}
+
+Nawet gdy nie jest to konieczne, Linux wykorzystuje niemal¿e ca³± woln± przestrzeñ
+RAM na bufory (\textit{cache}), by mieæ mo¿liwo¶æ szybkiego wykonania du¿ych
+operacji na dysku. Zawarto¶æ wiêkszo¶ci z tych buforów jest zsynchronizowana z trwa³ym
+no¶nikiem i w razie potrzeby wydzielenia pamiêci dla nowego procesu, mo¿e byæ
+natychmiast zwolniona. Przy takiej strategii zarz±dzania, podawanie faktycznej ilo¶ci
+wolnej pamiêci mija³oby siê z celem. Tak wiêc ilo¶æ wolnej pamiêci RAM podawana przez
+\emph{sysfence} zawiera równie¿ wspomniane bufory dyskowe, a zajêtej - jedynie
+przestrzeñ zajmowan± przez j±dro i dzia³aj±ce procesy.
+
+Nak³adaj±c dolne ograniczenie na ilo¶æ wolnej pamiêci, nale¿y mieæ na uwadze ¿e musz±
+zmie¶ciæ siê w niej bufory, a ich zmniejszenie mo¿e bardzo negatywnie wp³yn±æ na szybko¶æ
+operacji dyskowych.
+
+\subsubsection{Liczba procesów}
+
+Przy pomocy s³owa kluczowego \texttt{nproc} mo¿na monitorowaæ liczbê procesów. Bez
+argumentów, \texttt{nproc} zwróci nam liczbê wszystkich aktualnie wykonywanych procesów
+i w±tków. Mozliwe jest te¿ dokonanie selekcji ze wzglêdu na u¿ytkownika bêd±cego
+w³a¶cicielem oraz na stan procesu,np:
+
+\begin{itemize}
+    \item \texttt{nproc ''root'', ''http''} -- zwróci liczbê procesów nale¿±cych do u¿ytkowników
+    \textit{root} i \textit{http}. Mo¿na tak¿e u¿yæ warto¶ci numerycznej (bez cudzys³owu).
+    \item \texttt{nproc uninterruptible, stopped} -- poda ilo¶æ procesów w stanie
+    \textit{uninterruptible} (czekaj±ce na zakoñczenie operacji wej¶cia/wyj¶cia) lub
+    \textit{stopped} (zatrzymane, np. ¶ledzone przez debugger).
+    \item \texttt{nproc ''root'', ''http''  uninterruptible, stopped} -- przekrój w.w. zbiorów
+\end{itemize}
+
+
+Stany procesów mog± byæ identyfikowane poni¿szymi s³owami kluczowymi:
+
+
+\begin{itemize}
+    \item dzia³ajace (\textit{running}) -- \texttt{running}, \texttt{run},
+    \item u¶pione (\textit{sleeping}) -- \texttt{sleeping}, \texttt{sleep},
+    \item \textit{uninterruptible} -- \texttt{uninterruptible}, \texttt{unint}, \texttt{io},
+    \item zatrzymane (\textit{stopped}) -- \texttt{stopped}, \texttt{stop}, \texttt{traced},
+    \item zombie -- \texttt{zombie}, \texttt{defunct},
+\end{itemize}
+
+Dane dotycz±ce procesów mog± byæ niepe³ne gdy \emph{sysfence} zostanie uruchomiony z
+prawami zwyk³ego u¿ytkownika na systemie z restrykcyjnymi prawami (np. Linux z ³at±
+\emph{grsecurity} lub \emph{Openwall}).
+
+

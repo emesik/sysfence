@@ -1,0 +1,23 @@
+
+    Grammar overview (informal):
+
+ruleset             := rule [<string>] <block_expression> <rundata> [<logdata>] [<stepdata>]
+                    |  rule [<string>] <block_expression> <logdata> [<rundata>] [<stepdata>]
+block_expression    := { <expression> }
+expression          := <atomic> [<log_op> <expression>]
+                    |  <block_expression> [<log_op> <expression>]
+logdata             := log [once]
+rundata             := run [once] "command"
+stepdata            := step <integer>
+atomic              := <stat> <comp_op> <threshold>
+stat                := la1 | la5 | la15 | memfree | memused | swapfree | swapused | <fs_cond> | <proc_cond>
+fs_cond             := spacefree "path"
+                    |  spaceavail "path"
+                    |  spaceused "path"
+proc_cond           := nproc [<user_list>] [<state_list>]
+user_list           := <uid> [, <user_list>]
+                    |  <username> [, <user_list>]
+state_list          := <state> [, <state_list>]
+state               := sleeping | running | stopped | uninterruptible | zombie
+log_op              := && | ||
+comp_op             := = | < | > | <= | >= | !=

@@ -1,0 +1,51 @@
+\section{Wstêp}
+
+\subsection{Zastosowania programu}
+\emph{sysfence} jest demonem dzia³aj±cym w ¶rodowisku systemów uniksowych. Jego zadaniem
+jest ci±g³e ¶ledzenie stanu zasobów systemowych i podejmowanie akcji w razie
+wykrycia anomalii przewidzianych przez administratora systemu.
+                                                                                                               
+G³ównym zastosowaniem jest kontrolowanie stabilno¶ci pracy serwerów, które dzia³aj±
+pod du¿ym obci±¿eniem lub u¿ywaj± niestabilnego oprogramowania (np. aplikacji
+,,gubi±cych'' pamiêæ). Dziêki programowi \emph{sysfence} mo¿liwe jest proste
+zautomatyzowanie czynno¶ci takich jak :
+\begin{itemize}
+    \item
+    wy³±czanie us³ug sieciowych gdy system jest nadmiernie obci±¿ony i ponowne 
+    uruchamianie ich gdy sytuacja siê unormuje,
+    \item
+    prze³adowywanie podejrzanie dzia³aj±cych programów gdy brakuje wolnej 
+    pamiêci RAM lub stopieñ wykorzystania przestrzeni wymiany wskazuje na "wycieki" 
+    pamiêci,
+    \item
+    ostrzeganie gdy koñczy siê miejsce na partycjach dyskowych,
+
+    \item
+    informowanie administratorów poprzez pocztê lub SMS o nieprawid³owo¶ciach w pracy systemu.
+\end{itemize}
+
+Powy¿sza lista stanowi tylko przyk³ad. Dziêki pe³nej swobodzie w konfiguracji 
+i mo¿liwo¶ci dzia³ania z prawami zwyk³ego u¿ytkownika, \emph{sysfence} mo¿e byæ 
+wykorzystany do innych zastosowañ, nie tylko przez administratorów. Dla przyk³adu,
+korzystaæ z niego mog± programi¶ci zajmuj±cy siê du¿ymi aplikacjami, które
+na skutek b³êdów w kodzie by³yby w stanie przeci±¿yæ stacjê robocz± i uniemo¿liwiæ
+dalsz± pracê.
+
+\subsection{Rozwój projektu}
+Pisz±c projekt kierowali¶my siê zasadami panuj±cymi w ¶rodowisku OpenSource.
+Ca³y kod programu objêty jest licencj± GPL. Repozytorium CVS jest publicznie
+dostêpne, a co jaki¶ czas, po zakoñczeniu kolejnego etapu prac, wydawane by³y
+kolejne wersje aplikacji (w momencie zakoñczenia projektu licencjackiego planujemy
+wydaæ wersjê 0.14).
+
+Pomimo m³odego wieku, a co za tym idzie - niewielkiej popularno¶ci aplikacji,
+taka strategia przynios³a pierwsze efekty w postaci ³aty przys³anej nam przez
+jednego z u¿ytkowników. Poprawka dotyczy³a ustawieñ kompilatora oraz zale¿no¶ci
+pomiêdzy modu³ami projektu.
+
+Aktualnie \emph{sysfence} wchodzi w sk³ad dystrybucji \emph{PLD} oraz \emph{Sorcerer}
+systemu \emph{GNU/Linux}. Trwaj± prace nad przygotowaniem pakietów dla \emph{Debiana}.
+
+Stronê domow± naszego projektu mo¿na znale¼æ pod adresem
+\texttt{http://sysfence.sourceforge.net}.
+
