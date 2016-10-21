@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="iso-8859-2"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2" />
+    <meta name="keywords" content="sysfence, load average, free memory, free ram, used memory,
+    used ram, free swap, used swap, system resources monitoring, system resources guard,
+    send warning, sends warnings, daemon, /proc/loadavg, /proc/meminfo" />
+    <title>sysfence - system resources guard</title>
+    <link rel="stylesheet" type="text/css" href="sysfence.css" />
+</head>
+<body>
+
+<div class="logo">
+    <span class="sysfence">sysfence</span><br />
+    <span class="sfsmall">system resources guard for Linux</span>
+</div>
+
+
+<p>
+Sysfence is a resource monitoring tool designed for Linux machines. While running as daemon
+it checks resource levels and makes desired action if some values exceed safety limits.
+</p>
+
+<h4>Sysfence can be used for...</h4>
+<div class="in">
+    <ul>
+        <li> notifying system administrators when something goes wrong,</li>
+        <li> stopping services when system performance is dropping too low and starting them
+             when it's going up again,</li>
+        <li> periodically restarting memory-leaking processes,</li>
+        <li> dumping system statistics in critical situations,</li>
+    </ul>
+</div>
+
+<h4>Sysfence can monitor following resource levels</h4>
+<div class="in">
+    <ul>
+        <li> load average,</li>
+        <li> used and free memory amount,</li>
+        <li> used and free swap space,</li>
+    </ul>
+</div>
+
+<h4>Download</h4>
+<div class="in">
+    <p>
+    To get the latest release, please visit <a href="http://sourceforge.net/projects/sysfence/">sysfence
+    home page at SourceForge</a>.
+    </p>
+    <p>
+    You may also get
+    <a href="http://cvs.pld-linux.org/cgi-bin/cvsweb/SPECS/sysfence.spec">sysfence.spec</a> file from
+    <a href="http://pld-linux.org/">PLD GNU/Linux</a> CVS repository to build RPM package quickly.
+    </p>
+</div>
+
+<h4>Usage</h4>
+<div class="in">
+    <p>
+    Sysfence reads it's configuration from file(s) specified in argument list.
+    Config files may contain one or more <b>rules</b> describing conditions and
+    actions to be performed.
+    </p>
+
+    <p>
+    <b>Rule</b> has syntax like this:
+    </p>
+
+    <p class="commandline">
+    if { <br />
+    &nbsp;&nbsp;&nbsp;<i>resource1</i> &gt; <i>limit1</i><br />
+    &nbsp;&nbsp;&nbsp;or<br />
+    &nbsp;&nbsp;&nbsp;{ <i>resource2</i> &lt; <i>limit2</i> and
+    <i>resource3</i> &lt; <i>limit3</i> }<br />
+    }<br />run once 'command-to-be-run'
+    </p>
+
+    <p>
+    The block enclosed within <span class="command">{}</span> brackets describes condition.
+    When it's result is <b>TRUE</b>, following command is invoked.
+    </p>
+
+    <p>
+    The <span class="command">once</span> keyword is optional. If present, the command is
+    executed only once after condition becomes <b>TRUE</b>. Next execution will take place
+    only if condition becomes <b>FALSE</b> and then <b>TRUE</b> again. Without
+    <span class="command">once</span> keyword, command is invoked periodically, after every
+    resource check that gives <b>TRUE</b>, no matter what was the condition result before.
+    </p>
+    
+    <p>
+    Command specified right after <span class="command">run</span> keyword is passed to
+    <span class="command">/bin/sh</span>, so it may contain more than one instruction or
+    even whole script. But be careful - rule checking is suspended unless command execution
+    has been completed! (Other rules are unaffected.)
+    </p>
+
+    <p>
+    As <b>resources</b>, following ones can be given:
+    </p>
+    
+    <ul>
+        <li> <span class="command">la1</span> - load average during last minute. </li>
+        <li> <span class="command">la5</span> - load average during last 5 minutes. </li>
+        <li> <span class="command">la15</span> - load average during last 15 minutes. </li>
+        <li> <span class="command">memfree</span> - lower limit for free memory amount.</li>
+        <li> <span class="command">memused</span> - upper limit for memory used by processes.</li>
+        <li> <span class="command">swapfree</span> - lower limit for free swap space.</li>
+        <li> <span class="command">swapused</span> - upper limit for swap space in use.</li>
+    </ul>
+</div>
+
+<h4>Examples</h4>
+<div class="in">
+    <p>
+    Do you have problems with <a href="http://www.mysql.org">MySQL</a> server choking and freezing
+    whole system? I do. To find queries that cause problems, you may use:
+    </p>
+
+    <p class="commandline">
+    if {<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;la1 &gt;= 8.00<br />
+    } run once 'echo "SHOW FULL PROCESSLIST" | mysql | mail my@email.com'
+    </p>
+
+    <p>
+    Of course, that wouldn't prevent your system from being blocked, but following rule could.
+    <a href="http://www.mysql.org">MySQL</a> will be restarted if LA for last minute is over 10.0 or
+    LA for last five minutes is over 6.0.
+    </p>
+
+    <p class="commandline">
+    if { la1 &gt;= 10.00 or la5 &gt;= 6.0 }<br />
+    run '/etc/rc.d/init.d/mysql stop; sleep 120; /etc/rc.d/init.d/mysql start'
+    </p>
+
+    <p>
+    We may also restart some services that probably have memory leaks and use lots of swap space
+    if not restarted periodically. Let's assume that 256MB of used swap is enough to give our
+    <a href="http://www.zope.org">Zope</a> server a break.
+    </p>
+
+    <p class="commandline">
+    if {<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;swapused &gt;= 256M<br />
+    } run '/etc/rc.d/init.d/zope restart'
+    </p>
+
+    <p>
+    We may also alert admins... Notice that you don't have to be r00t:
+    </p>
+
+    <p class="commandline">
+    if {<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;la15 &gt; 4.0<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;and<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;{<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swapfree &lt; 64M<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memfree &lt; 128M<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+    } run 'echo "i wish you were here..." | sendsms +48ADMINCELLPHONE'
+    </p>
+
+    <p>
+    Using sysfence version 0.7 or later you may give rule a name that will be used
+    in logs:
+    </p>
+
+    <p class="commandline">
+    rule "high load" { la1 &gt; 3.0 and la15 &gt; 2.0 } log
+    </p>
+
+    <p>
+    <span class="command">rule</span> keyword has the same meaning as
+    <span class="command">if</span>. There are also synonymes for other keywords.
+    Detailed list is included within sysfence package.
+    </p>
+
+</div>
+
+<h4>Development</h4>
+<div class="in">
+    <p>
+    Sysfence has undergone generel redesign. New sources are available in CVS repository,
+    but weren't released yet (some functionality is still missing).<br />
+    All data structures are described in DIA file accessible via CVS. You may also see
+    PNG version of <a href="data_structures.png">data structures graph</a>.
+    </p>
+</div>
+
+<h4>Authors</h4>
+<div class="in">
+    <p>
+    Sysfence is being developed by:
+    </p>
+
+    <ul>
+        <li>
+        Michał Sałaban<br />
+        e-mail: <i>emes&nbsp;/at/&nbsp;pld-linux&nbsp;org</i>,<br />
+        jabber: <i>emes@jabber.org</i>
+        </li>
+        
+        <li>
+        Mirek Kopertowski<br />
+        e-mail: <i>m.kopertowski&nbsp;/at/&nbsp;post&nbsp;pl</i>
+        </li>
+    </ul>
+    
+    <p>
+    This software is released under GNU Public License version 2.0
+    </p>
+</div>
+
+<p class="copyleft">
+Michał Sałaban &lt;emes&nbsp;/at/&nbsp;pld-linux&nbsp;org&gt;
+</p>
+
+<p>
+    <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=100809&amp;type=1"
+    width="88" height="31" alt="SourceForge.net Logo" /></a>
+    <a href="http://validator.w3.org/check/referer"><img src="http://www.w3.org/Icons/valid-xhtml10"
+    alt="Valid XHTML 1.0!" height="31" width="88" /></a>
+    <a href="http://jigsaw.w3.org/css-validator/check/referer"><img
+    src="http://jigsaw.w3.org/css-validator/images/vcss" width="88" height="31" alt="Valid CSS!" /></a>
+</p>
+
+</body>
+</html>
+
