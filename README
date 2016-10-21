@@ -16,6 +16,7 @@
 
   3. How to compile sysfence?
 
+        $ cd src
         $ make
 
      Then, install it by typing:
