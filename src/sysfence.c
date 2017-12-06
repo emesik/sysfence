@@ -1,6 +1,6 @@
 /*
  
-  copyright (c) 2004, Michal Salaban <emes@pld-linux.org>
+  copyright (c) 2004, Michal Salaban <michal@salaban.info>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License, version 2 as
@@ -40,8 +40,8 @@ const char      *usage  =
                 "sysfence v0.16, 30-04-2006\n"
                 "Usage: sysfence <config file> [<config file> ...] \n"
                 "\n"
-                "http://sysfence.sourceforge.net/\n"
-                "Report bugs to <emes@pld-linux.org>\n"
+                "https://github.com/emesik/sysfence\n"
+                "Report bugs to <michal@salaban.info>\n"
                 "\n";
 
 int main (int argc, char *argv[])

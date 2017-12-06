@@ -1,6 +1,6 @@
 /*
  
-  copyright (c) 2004, Michal Salaban <emes@pld-linux.org>
+  copyright (c) 2004, Michal Salaban <michal@salaban.info>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License, version 2 as

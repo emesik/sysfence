@@ -1,12 +1,12 @@
 
     sysfence
     
-    (c) 2004, Michal Salaban <emes@pld-linux.org>
+    (c) 2004, Michal Salaban <michal@salaban.info>
 
 
   1. Where to find latest sysfence version?
 
-      Look at http://sysfence.sourceforge.net
+      Look at https://github.com/emesik/sysfence
 
   2. What do I need to use sysfence?
 
