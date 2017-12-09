@@ -37,7 +37,7 @@
 #include "sys/processtitle.h"
 
 const char      *usage  =
-                "sysfence v0.16, 30-04-2006\n"
+                "sysfence v0.17, 09-12-2017\n"
                 "Usage: sysfence <config file> [<config file> ...] \n"
                 "\n"
                 "https://github.com/emesik/sysfence\n"
